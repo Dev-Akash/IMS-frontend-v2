@@ -29,3 +29,34 @@ export const createCategory = async (name: string, description: string, userId: 
         console.error("Error creating category:", error)
     });
 }
+
+export const updateCategory = async (categoryId: string, name: string, description: string, userId: string, token: string) => {
+    return await fetch(`${API_URL}/category/${categoryId}/${userId}`, {
+        method: "PUT",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name, description }),
+    }).then((res) => {
+        return res.json()
+    }).catch((error) => {
+        console.error("Error updating category:", error)
+    });
+}
+
+export const deleteCategory = async (categoryId: string, userId: string, token: string) => {
+    return await fetch(`${API_URL}/category/${categoryId}/${userId}`, {
+        method: "DELETE",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+    }).then((res) => {
+        return res.json()
+    }).catch((error) => {
+        console.error("Error deleting category:", error)
+    });
+}

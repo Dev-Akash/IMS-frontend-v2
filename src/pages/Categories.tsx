@@ -24,12 +24,12 @@ import { Label } from "@/components/ui/label"
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { isAuthenticated } from "@/api/auth"
-import { createCategory, listCategories } from "@/api/categories"
+import { createCategory, deleteCategory, listCategories, updateCategory } from "@/api/categories"
 import { toast } from "sonner"
 import { Textarea } from "@/components/ui/textarea"
 
 interface Category {
-  id: number
+  _id: string
   name: string
   description: string
 }
@@ -41,7 +41,8 @@ export default function CategoriesPage() {
   const [search, setSearch] = useState("")
   const [categoryName, setCategoryName] = useState("")
   const [categoryDescription, setCategoryDescription] = useState("")
-  const [isEditing, setIsEditing] = useState(false);
+  const [categoryId, setCategoryId] = useState("");
+  // const [isEditing, setIsEditing] = useState(false);
 
   const { token, user } = isAuthenticated();
 
@@ -97,6 +98,60 @@ export default function CategoriesPage() {
       });
   }
 
+  const handleEditCategory = () => {
+    setLoading(true)
+    if (!categoryName || !categoryDescription) {
+      toast.error("Please fill in all fields")
+      setLoading(false)
+      return
+    }
+    if (categoryName.length < 3) {
+      toast.error("Category name must be at least 3 characters long")
+      setLoading(false)
+      return
+    }
+    console.log(categoryId) 
+    updateCategory(categoryId, categoryName, categoryDescription, user._id, token)
+      .then((data) => {
+        if (data.error) {
+          toast.error("Error updating category", { description: data.error })
+          setLoading(false)
+          return
+        } else {
+          setCategories(categories?.map((cat) => cat._id === categoryId ? data : cat))
+          setCategoryName("")
+          setCategoryDescription("")
+          setCategoryId("")
+          setModalOpen(null)
+          setLoading(false)
+          toast.success("Category updated successfully")
+        }
+      }).catch((error) => {
+        toast.error("Error updating category", { description: error.message })
+        setLoading(false)
+      });
+  }
+
+  const handleDeleteCategory = (categoryId: string) => () => {
+    setLoading(true);
+
+    deleteCategory(categoryId, user._id, token)
+      .then((data) => {
+        if (data.error) {
+          toast.error("Error deleting category", { description: data.error })
+          setLoading(false)
+          return
+        } else {
+          setCategories(categories?.filter((cat) => cat._id !== categoryId))
+          setLoading(false)
+          toast.success("Category deleted successfully")
+        }
+      }).catch((error) => {
+        toast.error("Error deleting category", { description: error.message })
+        setLoading(false)
+      });
+  }
+
   return (
     <div className="space-y-4 p-4 m-4">
       {/* Header */}
@@ -106,7 +161,12 @@ export default function CategoriesPage() {
           <Input onChange={(e) => setSearch(e.target.value)} placeholder="Search categories..." className="w-full sm:w-64" />
           {isAuthenticated().user && isAuthenticated().user.role === 1 && <Dialog open={modalOpen === "add"} onOpenChange={(e) => setModalOpen(e ? "add" : null)}>
             <DialogTrigger asChild>
-              <Button onClick={() => setModalOpen("add")}>
+              <Button onClick={() => {
+                setModalOpen("add"); 
+                setCategoryName(""); 
+                setCategoryDescription("")
+                setCategoryId("");
+              }}>
                 <Plus className="mr-2 h-4 w-4" /> Add Category
               </Button>
             </DialogTrigger>
@@ -151,7 +211,7 @@ export default function CategoriesPage() {
                   cat.name.toLowerCase().includes(search.toLowerCase())
                 )
                 .map((cat) => (
-                  <TableRow key={cat.id}>
+                  <TableRow key={cat._id}>
                     <TableCell>{cat.name}</TableCell>
                     <TableCell>{cat.description}</TableCell>
                     {isAuthenticated().user &&
@@ -168,7 +228,12 @@ export default function CategoriesPage() {
                               <Button
                                 size="icon"
                                 variant="outline"
-                                onClick={() => setModalOpen("edit")}
+                                onClick={() => {
+                                  setModalOpen("edit");
+                                  setCategoryName(cat.name)
+                                  setCategoryDescription(cat.description)
+                                  setCategoryId(cat._id)
+                                }}
                               >
                                 <Pencil className="h-4 w-4" />
                               </Button>
@@ -181,7 +246,8 @@ export default function CategoriesPage() {
                                 <Label htmlFor="name">Category Name</Label>
                                 <Input
                                   id="name"
-                                  defaultValue={cat.name}
+                                  value={categoryName}
+                                  onChange={(e) => setCategoryName(e.target.value)}
                                   placeholder="e.g. Office Supplies"
                                 />
                               </div>
@@ -189,12 +255,14 @@ export default function CategoriesPage() {
                                 <Label>Description</Label>
                                 <Textarea
                                   id="description"
-                                  defaultValue={cat.description}
+                                  value={categoryDescription}
+                                  onChange={(e) => setCategoryDescription(e.target.value)}
                                   placeholder="Enter a brief description..."
                                 />
                               </div>
                               <DialogFooter>
-                                <Button className="w-full mt-4">
+                                <Button className="w-full mt-4" onClick={handleEditCategory}>
+                                  {loading ? <Loader2 className="animate-spin h-4 w-4" /> : null}
                                   Save Changes
                                 </Button>
                               </DialogFooter>
@@ -202,7 +270,7 @@ export default function CategoriesPage() {
                           </Dialog>
 
                           {/* Delete */}
-                          <Button size="icon" variant="destructive">
+                          <Button onClick={handleDeleteCategory(cat._id)} size="icon" variant="destructive">
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </TableCell>
