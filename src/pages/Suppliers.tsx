@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/table"
 import { Label } from "@/components/ui/label"
 import { Plus, Pencil, Trash2 } from "lucide-react"
+import { isAuthenticated } from "@/api/auth"
 
 const sampleSuppliers = [
   {
@@ -50,7 +51,7 @@ export default function Suppliers() {
         <h2 className="text-2xl font-semibold">Suppliers</h2>
         <div className="flex w-full gap-2 sm:w-auto">
           <Input placeholder="Search suppliers..." className="w-full sm:w-64" />
-          <Dialog open={openModal === "add"} onOpenChange={(e) => setOpenModal(e ? "add" : null)}>
+          {isAuthenticated().user && isAuthenticated().user.role === 1 && <Dialog open={openModal === "add"} onOpenChange={(e) => setOpenModal(e ? "add" : null)}>
             <DialogTrigger asChild>
               <Button onClick={() => setOpenModal("add")}>
                 <Plus size={18} className="mr-1" />
@@ -85,7 +86,7 @@ export default function Suppliers() {
                 <Button className="w-full">Add</Button>
               </div>
             </DialogContent>
-          </Dialog>
+          </Dialog>}
         </div>
       </div>
 
@@ -99,7 +100,7 @@ export default function Suppliers() {
                 <TableHead>Contact</TableHead>
                 <TableHead>Phone / Email</TableHead>
                 <TableHead>Location</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                {isAuthenticated().user && isAuthenticated().user.role === 1 && <TableHead className="text-right">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -112,7 +113,7 @@ export default function Suppliers() {
                     <div className="text-xs text-muted-foreground">{supplier.email}</div>
                   </TableCell>
                   <TableCell>{supplier.location}</TableCell>
-                  <TableCell className="text-right space-x-2">
+                  {isAuthenticated().user && isAuthenticated().user.role === 1 && <TableCell className="text-right space-x-2">
                     <Dialog open={openModal === "edit"} onOpenChange={(e) => setOpenModal(e ? "edit" : null)}>
                       <DialogTrigger asChild>
                         <Button
@@ -156,7 +157,7 @@ export default function Suppliers() {
                     <Button variant="destructive" size="icon">
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                  </TableCell>
+                  </TableCell>}
                 </TableRow>
               ))}
             </TableBody>

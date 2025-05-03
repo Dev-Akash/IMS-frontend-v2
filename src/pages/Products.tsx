@@ -1,3 +1,4 @@
+import { isAuthenticated } from "@/api/auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { DialogContent, DialogHeader } from "@/components/ui/dialog"
@@ -27,7 +28,7 @@ export default function Products() {
 
                 <div className="flex gap-2 items-center w-full sm:w-auto">
                     <Input placeholder="Search product..." className="w-full sm:w-64" />
-                    <Dialog open={openModal === "add"} onOpenChange={(isOpen) => setOpenModal(isOpen ? "add" : null)}>
+                    {isAuthenticated().user && isAuthenticated().user.role === 1 && <Dialog open={openModal === "add"} onOpenChange={(isOpen) => setOpenModal(isOpen ? "add" : null)}>
                         <DialogTrigger asChild>
                             <Button onClick={() => setOpenModal("add")} className="whitespace-nowrap">
                                 <Plus size={18} className="mr-1" />
@@ -58,7 +59,7 @@ export default function Products() {
                                 <Button className="w-full">Add</Button>
                             </div>
                         </DialogContent>
-                    </Dialog>
+                    </Dialog>}
                 </div>
             </div>
 
@@ -72,7 +73,7 @@ export default function Products() {
                                 <TableHead>Category</TableHead>
                                 <TableHead>Price</TableHead>
                                 <TableHead>Quantity</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                                {isAuthenticated().user && isAuthenticated().user.role === 1 && <TableHead className="text-right">Actions</TableHead>}
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -82,7 +83,7 @@ export default function Products() {
                                     <TableCell>{product.category}</TableCell>
                                     <TableCell>{product.price}</TableCell>
                                     <TableCell>{product.quantity}</TableCell>
-                                    <TableCell className="text-right space-x-2">
+                                    {isAuthenticated().user && isAuthenticated().user.role === 1 && <TableCell className="text-right space-x-2">
                                         <Dialog open={openModal === "edit"} onOpenChange={(isOpen) => setOpenModal(isOpen ? "edit" : null)}>
                                             <DialogTrigger asChild>
                                                 <Button
@@ -122,7 +123,7 @@ export default function Products() {
                                         <Button variant="destructive" size="icon">
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
-                                    </TableCell>
+                                    </TableCell>}
                                 </TableRow>
                             ))}
                         </TableBody>

@@ -1,16 +1,18 @@
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { AlertTriangle, ArrowRight, Bell, Boxes, Package, Truck } from "lucide-react"
+import { AlertTriangle, Boxes, Package, Truck } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { TableCell, TableRow, Table, TableHeader, TableBody, TableHead } from "@/components/ui/table"
+import { useNavigate } from "react-router-dom"
 
 export default function UserDashboard() {
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-6 p-4 m-4">
       {/* Top Summary Cards */}
@@ -51,12 +53,14 @@ export default function UserDashboard() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Recent Stock Updates</CardTitle>
-          <div>
-            <Button size={"sm"}>Update Stock</Button>
-            <Button variant="outline" size="sm" className="ms-2">
-              View All
-            </Button>
-          </div>
+            <Button
+            variant="outline"
+            size="sm"
+            className="ms-2"
+            onClick={() => navigate("/dashboard/stocks")}
+            >
+            View All
+          </Button>
         </CardHeader>
         <CardContent className="p-0 overflow-x-auto">
           <Table>
@@ -97,7 +101,7 @@ export default function UserDashboard() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Low Stock Alerts</CardTitle>
-          <Button variant="outline" size="sm">View All</Button>
+          <Button variant="outline" size="sm" onClick={() => {navigate("/dashboard/notifications")}}>View All</Button>
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert variant="destructive">

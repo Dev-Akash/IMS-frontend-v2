@@ -25,6 +25,7 @@ import {
   import { Label } from "@/components/ui/label"
   import { Plus, Pencil, Trash2 } from "lucide-react"
   import { useState } from "react"
+import { isAuthenticated } from "@/api/auth"
   
   const sampleCategories = [
     { id: 1, name: "Electronics" },
@@ -40,7 +41,8 @@ import {
         {/* Header */}
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold">Categories</h2>
-          <Dialog open={modalOpen === "add"} onOpenChange={(e) => setModalOpen(e ? "add" : null)}>
+          <Input placeholder="Search categories..." className="w-full sm:w-64" />
+          {isAuthenticated().user && isAuthenticated().user.role === 1 && <Dialog open={modalOpen === "add"} onOpenChange={(e) => setModalOpen(e ? "add" : null)}>
             <DialogTrigger asChild>
               <Button onClick={() => setModalOpen("add")}>
                 <Plus className="mr-2 h-4 w-4" /> Add Category
@@ -56,7 +58,7 @@ import {
                 <Button className="w-full mt-4">Add</Button>
               </div>
             </DialogContent>
-          </Dialog>
+          </Dialog>}
         </div>
   
         {/* Category Table */}
@@ -66,14 +68,14 @@ import {
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  {isAuthenticated().user && isAuthenticated().user.role === 1 && <TableHead className="text-right">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {sampleCategories.map((cat) => (
                   <TableRow key={cat.id}>
                     <TableCell>{cat.name}</TableCell>
-                    <TableCell className="text-right space-x-2">
+                    {isAuthenticated().user && isAuthenticated().user.role === 1 && <TableCell className="text-right space-x-2">
                       {/* Edit */}
                       <Dialog open={modalOpen === "edit"} onOpenChange={(e) => setModalOpen(e ? "edit" : null)}>
                         <DialogTrigger asChild>
@@ -101,7 +103,7 @@ import {
                       <Button size="icon" variant="destructive">
                         <Trash2 className="h-4 w-4" />
                       </Button>
-                    </TableCell>
+                    </TableCell>}
                   </TableRow>
                 ))}
               </TableBody>

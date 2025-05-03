@@ -19,6 +19,7 @@ import {
   TableCell,
 } from "@/components/ui/table"
 import { Pencil, Plus, Trash2, Warehouse } from "lucide-react"
+import { isAuthenticated } from "@/api/auth"
 
 const sampleWarehouses = [
   {
@@ -45,7 +46,7 @@ export default function WarehousesPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Warehouses</h2>
-        <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+        {isAuthenticated().user && isAuthenticated().user.role === 1 && <Dialog open={openDialog} onOpenChange={setOpenDialog}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
@@ -72,7 +73,7 @@ export default function WarehousesPage() {
               <Button className="w-full mt-2">Save Warehouse</Button>
             </div>
           </DialogContent>
-        </Dialog>
+        </Dialog>}
       </div>
 
       {/* Table */}
@@ -85,7 +86,7 @@ export default function WarehousesPage() {
                 <TableHead>Location</TableHead>
                 <TableHead>Capacity</TableHead>
                 <TableHead>Current Stock</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                {isAuthenticated().user && isAuthenticated().user.role === 1 && <TableHead className="text-right">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -98,7 +99,7 @@ export default function WarehousesPage() {
                   <TableCell>{warehouse.location}</TableCell>
                   <TableCell>{warehouse.capacity}</TableCell>
                   <TableCell>{warehouse.stockCount}</TableCell>
-                  <TableCell className="text-right space-x-2">
+                  {isAuthenticated().user && isAuthenticated().user.role === 1 && <TableCell className="text-right space-x-2">
                     <Button size="sm" variant="outline">
                       View Stocks
                     </Button>
@@ -108,7 +109,7 @@ export default function WarehousesPage() {
                     <Button size="icon" variant="destructive">
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                  </TableCell>
+                  </TableCell>}
                 </TableRow>
               ))}
             </TableBody>
