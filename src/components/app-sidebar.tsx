@@ -15,13 +15,13 @@ import {
 } from "@/components/ui/sidebar"
 import { Card } from "./ui/card"
 import { ModeToggle } from "./mode-toggle"
-import { isAuthenticated } from "@/api/auth"
+import { isAuthenticated, signOut } from "@/api/auth"
 
 // Menu items.
 const items = [
     {
         title: "Dashboard",
-        url: isAuthenticated().user.role === 1 ? "/dashboard/admin" : "/dashboard/user",
+        url: isAuthenticated()?.user?.role === 1 ? "/dashboard/admin" : "/dashboard/user",
         icon: Home,
         access: "user",
     },
@@ -79,7 +79,7 @@ export function AppSidebar() {
     return (
         <Sidebar>
             <SidebarHeader>
-                <Card className="flex items-center justify-between p-4">
+                <Card className="flex items-center justify-between p-4 cursor-pointer" onClick={() => window.location.href = "/"}>
                     <div className="flex items-center space-x-2">
                         <Package />
                         <span className="text-lg font-bold">InventoryPro</span>
@@ -119,7 +119,7 @@ export function AppSidebar() {
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                         <SidebarMenuButton asChild>
-                            <a href="#">
+                            <a href="#" onClick={(e) => {signOut(() => window.location.href = "/")}}>
                                 <LogOut />
                                 <span>Logout</span>
                             </a>

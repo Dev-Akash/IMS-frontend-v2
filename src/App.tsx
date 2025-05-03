@@ -28,8 +28,8 @@ function App() {
         {/* Landing */}
         <Route element={<LandingLayout />}>
           <Route index path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={!isAuthenticated().user ? <Login /> : <Navigate to={isAuthenticated().user.role === 1 ? '/dashboard/admin' : '/dashboard/user'}/>} />
+          <Route path="/signup" element={!isAuthenticated().user ? <Signup /> : <Navigate to={isAuthenticated().user.role === 1 ? '/dashboard/admin' : '/dashboard/user'}/>} />
         </Route>
         
         {/* Dashboards */}

@@ -49,10 +49,12 @@ export default function Login() {
 
           authenticate(data, () => {
             if (isAuthenticated().user && isAuthenticated().user.role === 1) {
-              navigate("/dashboard/admin")
+              // navigate("/dashboard/admin")
+              window.location.href = "/dashboard/admin"
             }
             else {
-              navigate("/dashboard/user");
+              // navigate("/dashboard/user");
+              window.location.href = "/dashboard/user"
             }
           })
         }

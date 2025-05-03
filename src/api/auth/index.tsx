@@ -30,6 +30,31 @@ export const signIn = async (email: string, password: string) => {
     });
 }
 
+export const signOutUser = async () => {
+    return fetch(`${API_URL}/signout`, {
+        method: 'GET',
+        headers: {
+            Accept: 'application/json',
+            "Content-Type": 'application/json'
+        }
+    }).then((res) => {
+        return res.json();
+    }).catch((err) => {
+        console.log(err);
+    });
+}
+
+export const signOut = (next: () => void) => {
+    if (typeof window !== "undefined") {
+        localStorage.removeItem("jwt");
+        next();
+        // API call to sign out
+        signOutUser().then((data) => {
+            console.log("Signout success", data);
+        });
+    }
+}
+
 export const isAuthenticated = () => {
     if (typeof window === "undefined") {
         return false;
