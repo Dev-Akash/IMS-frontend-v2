@@ -1,27 +1,45 @@
+import { isAuthenticated } from "@/api/auth";
+import { listNotifications } from "@/api/notifications";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { Trash2, CheckCircle } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const notifications = [
-    { id: 1, message: "Stock for Wireless Mouse is low.", date: "2025-05-01", status: "Unread" },
-    { id: 2, message: "New order placed for LED Monitor.", date: "2025-05-02", status: "Read" },
-    { id: 3, message: "Product 'Desk Lamp' restocked.", date: "2025-05-03", status: "Unread" },
-];
+interface Notifications {
+    _id: string
+    warehouse: string
+    product: string
+    message: string
+    is_read: boolean
+    createdAt: string
+}
 
 export default function Notifications() {
     const [search, setSearch] = useState("");
-    const [notificationsList, setNotificationsList] = useState(notifications);
+    const [notificationsList, setNotificationsList] = useState<Notifications[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const {token} = isAuthenticated();
 
-    const handleMarkAllRead = () => {
-        setNotificationsList(notificationsList.map((item) => ({ ...item, status: "Read" })));
-    };
+    useEffect(() => {
+        setLoading(true);
 
-    const handleDeleteAll = () => {
-        setNotificationsList([]);
-    };
+        listNotifications(1, 100, token).then((data) => {
+            if(data.error){
+                setError(data.error);
+                setLoading(false)
+            }
+            else{
+                setNotificationsList(data);
+                setLoading(false);
+                setError("");
+            }
+        }).catch((err) => {
+            console.log(err);
+        });
+    }, [])
 
     return (
         <div className="space-y-4 p-4 m-4">
@@ -39,25 +57,25 @@ export default function Notifications() {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2">
+            {/* <div className="flex gap-2">
                 <Button onClick={handleMarkAllRead} className="w-auto">
                     Mark All as Read
                 </Button>
                 <Button onClick={handleDeleteAll} variant="destructive" className="w-auto">
                     Delete All
                 </Button>
-            </div>
+            </div> */}
 
             {/* Notifications Table */}
             <Card>
-                <CardContent className="p-0 overflow-x-auto">
+                <CardContent className="p-0">
                     <Table>
                         <TableHeader>
                             <TableRow>
                                 <TableCell>Date</TableCell>
                                 <TableCell>Message</TableCell>
                                 <TableCell>Status</TableCell>
-                                <TableCell className="text-right">Actions</TableCell>
+                                {/* <TableCell className="text-right">Actions</TableCell> */}
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -66,18 +84,18 @@ export default function Notifications() {
                                     notification.message.toLowerCase().includes(search.toLowerCase())
                                 )
                                 .map((notification) => (
-                                    <TableRow key={notification.id}>
-                                        <TableCell>{notification.date}</TableCell>
+                                    <TableRow key={notification._id}>
+                                        <TableCell>{new Date(notification.createdAt).toDateString()}</TableCell>
                                         <TableCell>{notification.message}</TableCell>
-                                        <TableCell>{notification.status}</TableCell>
-                                        <TableCell className="text-right space-x-2">
+                                        <TableCell>{notification.is_read ? "Read": "Unread"}</TableCell>
+                                        {/* <TableCell className="text-right space-x-2">
                                             <Button variant="outline" size="icon">
                                                 <CheckCircle className="h-4 w-4" />
                                             </Button>
                                             <Button variant="destructive" size="icon">
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
-                                        </TableCell>
+                                        </TableCell> */}
                                     </TableRow>
                                 ))}
                         </TableBody>
