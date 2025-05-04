@@ -27,7 +27,6 @@ import { isAuthenticated } from "@/api/auth"
 import { createCategory, deleteCategory, listCategories, updateCategory } from "@/api/categories"
 import { toast } from "sonner"
 import { Textarea } from "@/components/ui/textarea"
-import { it } from "node:test"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Category {
@@ -164,7 +163,12 @@ export default function CategoriesPage() {
     <div className="space-y-4 p-4 m-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Categories</h2>
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Categories</h2>
+          <p className="text-muted-foreground text-sm">
+            Total categories: {totalItems}
+          </p>
+        </div>
         <div className="flex items-center space-x-2">
           <Input onChange={(e) => setSearch(e.target.value)} placeholder="Search categories..." className="w-full sm:w-64" />
           {isAuthenticated().user && isAuthenticated().user.role === 1 && <Dialog open={modalOpen === "add"} onOpenChange={(e) => setModalOpen(e ? "add" : null)}>
@@ -311,7 +315,7 @@ export default function CategoriesPage() {
               Items per page:
               <Select
                 value={String(itemsPerPage)}
-                onValueChange={(value) => {setItemsPerPage(Number(value)); loadCategories(currentPage, Number(value))}}
+                onValueChange={(value) => { setItemsPerPage(Number(value)); loadCategories(currentPage, Number(value)) }}
               >
                 <SelectTrigger className="w-20">
                   <SelectValue placeholder="10" />
