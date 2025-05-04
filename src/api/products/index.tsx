@@ -30,3 +30,34 @@ export const createProduct = async (product: Product, userId: string, token: str
         console.log(err);
     })
 }
+
+export const updateProduct = async (productId: string, product: Product, userId: string, token: string) => {
+    return await fetch(`${API_URL}/product/${productId}/${userId}`, {
+        method: "PUT",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(product),
+    }).then((res) => {
+        return res.json();
+    }).catch((err) => {
+        console.error("Error updating product:", err);
+    });
+};
+
+export const deleteProduct = async (productId: string, userId: string, token: string) => {
+    return await fetch(`${API_URL}/product/${productId}/${userId}`, {
+        method: "DELETE",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+    }).then((res) => {
+        return res.json();
+    }).catch((err) => {
+        console.error("Error deleting product:", err);
+    });
+};

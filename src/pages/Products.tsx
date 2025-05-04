@@ -1,5 +1,5 @@
 import { isAuthenticated } from "@/api/auth"
-import { createProduct, listProducts } from "@/api/products"
+import { createProduct, deleteProduct, listProducts, updateProduct } from "@/api/products"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { DialogContent, DialogHeader } from "@/components/ui/dialog"
@@ -55,6 +55,7 @@ export default function Products() {
     const [limit, setLimit] = useState(10); // Number of items per page
     const [searchQuery, setSearchQuery] = useState(""); // Search query
     const [formData, setFormData] = useState({
+        "productId": "",
         "name": "",
         "description": "",
         "category": "",
@@ -78,6 +79,7 @@ export default function Products() {
     const resetForm = () => {
         setFormData({
             ...formData,
+            productId: '',
             name: '',
             description: "",
             category: "",
@@ -188,7 +190,6 @@ export default function Products() {
         } as Product;
         product.category = categoryId;
 
-        console.log(product);
         createProduct(product, user._id, token)
             .then((data) => {
                 if (data.error) {
@@ -196,7 +197,7 @@ export default function Products() {
                     setFormData({ ...formData, formLoading: false });
                 }
                 else {
-                    setProducts([...products, data as Product])
+                    setProducts([data as Product, ...products])
                     resetForm();
                     setOpenModal(null);
                     toast.success("Product added successfully!")
@@ -206,6 +207,75 @@ export default function Products() {
                 setFormData({ ...formData, formLoading: false })
             });
     }
+
+    const handleUpdateProduct = () => {
+        setFormData({ ...formData, formLoading: true });
+        if (!name || !description || !categoryId || !total_quantity || !lowStockThreshold || !price || !warehouse) {
+            toast.error("All fields are required");
+            return;
+        }
+        if (name.trim().length < 3) {
+            toast.error("Name must be more than 3 alphabets");
+            return;
+        }
+        if (description.trim().length < 10) {
+            toast.error("Description must be more than 10 alphabets");
+            return;
+        }
+        let quantityByWarehouse = [
+            {
+                quantity: total_quantity,
+                warehouse: warehouse
+            } as QuantityByWarehouse
+        ];
+        let updatedProduct = {
+            name,
+            description,
+            category: categoryId,
+            total_quantity,
+            lowStockThreshold,
+            price,
+            quantityByWarehouse
+        } as Product;
+
+        updateProduct(formData.productId, updatedProduct, user._id, token)
+            .then((data) => {
+                if (data.error) {
+                    toast.error(data.error);
+                    setFormData({ ...formData, formLoading: false });
+                } else {
+                    setProducts(products.map((product) => (product._id === data._id ? data : product)));
+                    resetForm();
+                    setOpenModal(null);
+                    toast.success("Product updated successfully!");
+                }
+            })
+            .catch(() => {
+                toast.error("Something went wrong while updating the product! Please try again later...");
+                setFormData({ ...formData, formLoading: false });
+            });
+    };
+
+    const handleDeleteProduct = (productId: string) => {
+        setLoading(true);
+        // Call API to delete product
+        deleteProduct(productId, user._id, token)
+            .then((data) => {
+                if (data.error) {
+                    toast.error(data.error);
+                    setLoading(false);
+                } else {
+                    setProducts(products.filter((product) => product._id !== productId));
+                    toast.success("Product deleted successfully!");
+                    setLoading(false);
+                }
+            })
+            .catch(() => {
+                toast.error("Something went wrong while deleting the product! Please try again later...");
+                setLoading(false);
+            });
+    };
+
     return (
         <div className="space-y-4 p-4 m-4">
             {/* Page Header + Search */}
@@ -243,7 +313,7 @@ export default function Products() {
                                     {/* <Input id="category" onChange={handleFormChange} value={category} placeholder="e.g., Electronics" /> */}
                                     <Select
                                         value={categoryId}
-                                        onValueChange={(value) => { setFormData({...formData, categoryId: value})}}
+                                        onValueChange={(value) => { setFormData({ ...formData, categoryId: value }) }}
                                     >
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder="Select Category" />
@@ -271,10 +341,9 @@ export default function Products() {
                                 </div>
                                 <div className="grid gap-2">
                                     <Label>Warehouse</Label>
-                                    {/* <Input id="warehouse" onChange={handleFormChange} value={warehouse} placeholder="e.g., Electronics" /> */}
                                     <Select
                                         value={warehouse}
-                                        onValueChange={(value) => { setFormData({...formData, warehouse: value})}}
+                                        onValueChange={(value) => { setFormData({ ...formData, warehouse: value }) }}
                                     >
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder="Select Warehouse" />
@@ -327,7 +396,21 @@ export default function Products() {
                                                     <Button
                                                         size="icon"
                                                         variant="outline"
-                                                        onClick={() => setOpenModal("edit")}
+                                                        onClick={() => {
+                                                            setOpenModal("edit")
+                                                            setFormData({
+                                                                ...formData,
+                                                                productId: product._id,
+                                                                name: product.name,
+                                                                description: product.description,
+                                                                categoryId: product.category,
+                                                                price: product.price,
+                                                                total_quantity: product.total_quantity,
+                                                                lowStockThreshold: product.lowStockThreshold,
+                                                                warehouse: product.quantityByWarehouse.length > 0 ? product.quantityByWarehouse[0].warehouse : "",
+                                                                category: product.category
+                                                            })
+                                                        }}
                                                     >
                                                         <Pencil className="h-4 w-4" />
                                                     </Button>
@@ -339,26 +422,67 @@ export default function Products() {
                                                     <div className="space-y-3">
                                                         <div className="grid gap-2">
                                                             <Label>Product Name</Label>
-                                                            <Input id="name" defaultValue={product.name} />
+                                                            <Input id="name" onChange={handleFormChange} value={name} placeholder="Enter name" />
+                                                        </div>
+                                                        <div className="grid gap-2">
+                                                            <Label>Product Description</Label>
+                                                            <Input id="description" onChange={handleFormChange} value={description} placeholder="Enter description" />
                                                         </div>
                                                         <div className="grid gap-2">
                                                             <Label>Category</Label>
-                                                            <Input id="category" defaultValue={product.category} />
+                                                            {/* <Input id="category" onChange={handleFormChange} value={category} placeholder="e.g., Electronics" /> */}
+                                                            <Select
+                                                                value={categoryId}
+                                                                onValueChange={(value) => { setFormData({ ...formData, categoryId: value }) }}
+                                                            >
+                                                                <SelectTrigger className="w-full">
+                                                                    <SelectValue placeholder="Select Category" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    {categories.map((cat) => (
+                                                                        <SelectItem key={cat?._id} value={cat?._id}>
+                                                                            {cat?.name}
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
                                                         </div>
                                                         <div className="grid gap-2">
                                                             <Label>Price</Label>
-                                                            <Input id="price" defaultValue={product.price} />
+                                                            <Input id="price" onChange={handleFormChange} value={price} type="number" placeholder="e.g., 199" />
                                                         </div>
                                                         <div className="grid gap-2">
-                                                            <Label>Quantity</Label>
-                                                            <Input id="quantity" defaultValue={product.total_quantity} />
+                                                            <Label>Initial Quantity</Label>
+                                                            <Input id="total_quantity" onChange={handleFormChange} value={total_quantity} type="number" placeholder="e.g., 100" />
                                                         </div>
-                                                        <Button className="w-full">Save Changes</Button>
+                                                        <div className="grid gap-2">
+                                                            <Label>Low Stock Threshold</Label>
+                                                            <Input id="lowStockThreshold" onChange={handleFormChange} value={lowStockThreshold} type="number" placeholder="0" />
+                                                        </div>
+                                                        <div className="grid gap-2">
+                                                            <Label>Warehouse</Label>
+                                                            <Select
+                                                                value={warehouse}
+                                                                onValueChange={(value) => { setFormData({ ...formData, warehouse: value }) }}
+                                                            >
+                                                                <SelectTrigger className="w-full">
+                                                                    <SelectValue placeholder="Select Warehouse" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    {warehouses.map((ware) => (
+                                                                        <SelectItem key={ware?._id} value={ware?._id}>
+                                                                            {ware?.name}
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+                                                        <Button onClick={handleUpdateProduct} className="w-full">Save Changes</Button>
                                                     </div>
                                                 </DialogContent>
                                             </Dialog>
 
-                                            <Button variant="destructive" size="icon">
+                                            <Button onClick={() => handleDeleteProduct(product._id)} variant="destructive" size="icon">
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
                                         </TableCell>}
