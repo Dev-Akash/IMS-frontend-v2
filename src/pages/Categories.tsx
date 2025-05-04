@@ -27,6 +27,8 @@ import { isAuthenticated } from "@/api/auth"
 import { createCategory, deleteCategory, listCategories, updateCategory } from "@/api/categories"
 import { toast } from "sonner"
 import { Textarea } from "@/components/ui/textarea"
+import { it } from "node:test"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Category {
   _id: string
@@ -42,28 +44,34 @@ export default function CategoriesPage() {
   const [categoryName, setCategoryName] = useState("")
   const [categoryDescription, setCategoryDescription] = useState("")
   const [categoryId, setCategoryId] = useState("");
-  // const [isEditing, setIsEditing] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const { token, user } = isAuthenticated();
 
-  useEffect(() => {
+  const loadCategories = (page: number, limit: number) => {
     setLoading(true)
-    // setError("")
-    listCategories().then((data) => {
+    listCategories(page, limit).then((data) => {
       if (data.error) {
         toast.error("Error fetching categories", { description: data.error })
         setLoading(false)
       } else {
-        setCategories(data)
+        setCategories(data.categories)
+        setTotalItems(data.total)
+        setTotalPages(data.pages)
+        setCurrentPage(data.page)
         setLoading(false)
-        // setSuccess(true)
       }
     }).catch((error) => {
-      // setError("Error fetching categories")
       toast.error("Error fetching categories", { description: error.message })
       setLoading(false)
     });
-  }, []);
+  }
+  useEffect(() => {
+    loadCategories(currentPage, itemsPerPage)
+  }, [currentPage]);
 
   const handleAddCategory = () => {
     setLoading(true)
@@ -110,7 +118,7 @@ export default function CategoriesPage() {
       setLoading(false)
       return
     }
-    console.log(categoryId) 
+    console.log(categoryId)
     updateCategory(categoryId, categoryName, categoryDescription, user._id, token)
       .then((data) => {
         if (data.error) {
@@ -162,8 +170,8 @@ export default function CategoriesPage() {
           {isAuthenticated().user && isAuthenticated().user.role === 1 && <Dialog open={modalOpen === "add"} onOpenChange={(e) => setModalOpen(e ? "add" : null)}>
             <DialogTrigger asChild>
               <Button onClick={() => {
-                setModalOpen("add"); 
-                setCategoryName(""); 
+                setModalOpen("add");
+                setCategoryName("");
                 setCategoryDescription("")
                 setCategoryId("");
               }}>
@@ -295,6 +303,45 @@ export default function CategoriesPage() {
               <Plus className="mr-2 h-4 w-4" /> Add Category
             </Button>}
           </div>}
+          <div className="flex items-center justify-between p-4 border-t">
+            <div className="text-sm text-muted-foreground">
+              Page {currentPage} of {totalPages}
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              Items per page:
+              <Select
+                value={String(itemsPerPage)}
+                onValueChange={(value) => {setItemsPerPage(Number(value)); loadCategories(currentPage, Number(value))}}
+              >
+                <SelectTrigger className="w-20">
+                  <SelectValue placeholder="10" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="25">25</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
