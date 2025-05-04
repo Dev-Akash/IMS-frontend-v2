@@ -14,7 +14,7 @@ import { toast } from "sonner"
 import { listCategories } from "@/api/categories"
 import { listWarehouses } from "@/api/warehouse"
 
-interface Warehouse {
+export interface Warehouse {
     _id: string
     name: string
     manager: string
@@ -452,30 +452,8 @@ export default function Products() {
                                                             <Input id="price" onChange={handleFormChange} value={price} type="number" placeholder="e.g., 199" />
                                                         </div>
                                                         <div className="grid gap-2">
-                                                            <Label>Initial Quantity</Label>
-                                                            <Input id="total_quantity" onChange={handleFormChange} value={total_quantity} type="number" placeholder="e.g., 100" />
-                                                        </div>
-                                                        <div className="grid gap-2">
                                                             <Label>Low Stock Threshold</Label>
                                                             <Input id="lowStockThreshold" onChange={handleFormChange} value={lowStockThreshold} type="number" placeholder="0" />
-                                                        </div>
-                                                        <div className="grid gap-2">
-                                                            <Label>Warehouse</Label>
-                                                            <Select
-                                                                value={warehouse}
-                                                                onValueChange={(value) => { setFormData({ ...formData, warehouse: value }) }}
-                                                            >
-                                                                <SelectTrigger className="w-full">
-                                                                    <SelectValue placeholder="Select Warehouse" />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    {warehouses.map((ware) => (
-                                                                        <SelectItem key={ware?._id} value={ware?._id}>
-                                                                            {ware?.name}
-                                                                        </SelectItem>
-                                                                    ))}
-                                                                </SelectContent>
-                                                            </Select>
                                                         </div>
                                                         <Button onClick={handleUpdateProduct} className="w-full">Save Changes</Button>
                                                     </div>
