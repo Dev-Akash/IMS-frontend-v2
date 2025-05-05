@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
-import { listWarehouses } from "@/api/warehouse"
 import { useCategoryListStore } from "@/hooks/useCategoryListStore"
 import { useWarehouseListStore } from "@/hooks/useWarehouseListStore"
 
@@ -43,7 +42,6 @@ export default function Products() {
     const [openModal, setOpenModal] = useState<"add" | "edit" | null>(null);
     const [products, setProducts] = useState<Product[]>([]);
     const categories = useCategoryListStore();
-    // const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
     const warehouses = useWarehouseListStore();
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -67,7 +65,7 @@ export default function Products() {
     });
 
     const { token, user } = isAuthenticated();
-    const { name, description, category, categoryId, price, total_quantity, lowStockThreshold, warehouse, error, success, formLoading } = formData;
+    const { name, description, category, categoryId, price, total_quantity, lowStockThreshold, warehouse} = formData;
 
     const handleFormChange = (e: any) => {
         setFormData({ ...formData, [e.target.id]: e.target.value, error: "", success: false })
@@ -108,7 +106,7 @@ export default function Products() {
                     setTotalItems(data.total); // Set total items from API response
                     setLoading(false);
                 }
-            }).catch((error) => {
+            }).catch(() => {
                 // console.error("Error fetching products:", error);
                 toast.error("Error fetching products");
                 setLoading(false);
@@ -162,7 +160,7 @@ export default function Products() {
                     setOpenModal(null);
                     toast.success("Product added successfully!")
                 }
-            }).catch((err) => {
+            }).catch(() => {
                 toast.error("Something went wrong while adding product! Please try again later...")
                 setFormData({ ...formData, formLoading: false })
             });

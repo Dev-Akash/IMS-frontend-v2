@@ -69,9 +69,6 @@ export default function StockDashboard() {
     destinationWarehouse,
     quantity,
     transactionType,
-    error,
-    success,
-    loadingForm
   } = formData;
 
   const loadStockLogs = (page: number, limit: number) => {
@@ -90,7 +87,7 @@ export default function StockDashboard() {
         setCurrentPage(data.page);
         setTotalPages(data.pages);
       }
-    }).catch((error) => {
+    }).catch(() => {
       // console.error("Error fetching products:", error);
       toast.error("Error fetching Stock Logs");
       setLoading(false);

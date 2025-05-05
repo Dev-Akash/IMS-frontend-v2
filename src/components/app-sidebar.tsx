@@ -119,7 +119,7 @@ export function AppSidebar() {
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                         <SidebarMenuButton asChild>
-                            <a href="#" onClick={(e) => {signOut(() => window.location.href = "/")}}>
+                            <a href="#" onClick={() => {signOut(() => window.location.href = "/")}}>
                                 <LogOut />
                                 <span>Logout</span>
                             </a>
