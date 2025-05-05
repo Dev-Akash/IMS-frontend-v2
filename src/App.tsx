@@ -18,20 +18,8 @@ import Notifications from './pages/Notifications'
 import CategoriesPage from './pages/Categories'
 import WarehousesPage from './pages/Warehouses'
 import { isAuthenticated } from './api/auth'
-import { useEffect } from 'react'
-import { fetchCategoryData } from './lib/fetchCategoryData'
-import { fetchProductData } from './lib/fetchProductData'
-import { fetchWarehouseData } from './lib/fetchWarehouseData'
-import { fetchNotificationData } from './lib/fetchNotificationData'
 
 function App() {
-
-  useEffect(() => {
-    fetchCategoryData();
-    fetchProductData();
-    fetchWarehouseData();
-    fetchNotificationData();
-  }, [])
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">

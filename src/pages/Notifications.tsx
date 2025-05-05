@@ -1,9 +1,10 @@
+import { isAuthenticated } from "@/api/auth";
+import { listNotifications } from "@/api/notifications";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
-import { useNotificationListStore } from "@/hooks/useNotificationListStore";
 import { TriangleAlert } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export interface Notifications {
     _id: string
@@ -16,7 +17,28 @@ export interface Notifications {
 
 export default function Notifications() {
     const [search, setSearch] = useState("");
-    const notificationsList = useNotificationListStore()
+    const [notificationsList, setNotificationsList] = useState<Notifications[]>([]);
+     const [loading, setLoading] = useState(false);
+     const [error, setError] = useState("");
+     const {token} = isAuthenticated();
+ 
+     useEffect(() => {
+         setLoading(true);
+ 
+         listNotifications(1, 100, token).then((data) => {
+             if(data.error){
+                 setError(data.error);
+                 setLoading(false)
+             }
+             else{
+                 setNotificationsList(data);
+                 setLoading(false);
+                 setError("");
+             }
+         }).catch((err) => {
+             console.log(err);
+         });
+     }, [])
 
     return (
         <div className="space-y-4 p-4 m-4">

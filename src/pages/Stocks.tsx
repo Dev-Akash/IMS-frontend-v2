@@ -13,9 +13,9 @@ import { useEffect, useState } from "react"
 import { isAuthenticated } from "@/api/auth"
 import { listStockLogs, updateStock } from "@/api/stocks"
 import { toast } from "sonner"
-import { useProductListStore } from "@/hooks/useProdcutListStore"
-import { fetchProductData } from "@/lib/fetchProductData"
-import { useWarehouseListStore } from "@/hooks/useWarehouseListStore"
+import { Product, Warehouse } from "./Products"
+import { listWarehouses } from "@/api/warehouse"
+import { listProducts } from "@/api/products"
 
 const outOfStockProducts = [
   { id: 101, name: "Notebook" },
@@ -41,8 +41,10 @@ enum TransactionType {
 export default function StockDashboard() {
   const [open, setOpen] = useState(false);
   const [stockLogs, setStockLogs] = useState<StockLog[]>([]);
-  const products = useProductListStore();
-  const warehouses = useWarehouseListStore();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  // const products = useProductListStore();
+  // const warehouses = useWarehouseListStore();
   const [limit, setLimit] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPage, setTotalPages] = useState(0);
@@ -93,6 +95,48 @@ export default function StockDashboard() {
       setLoading(false);
     });
   }
+
+  const loadProducts = () => {
+    setLoading(true);
+    // Fetch products from API
+    listProducts(1, 1000)
+      .then((data) => {
+        if (data.error) {
+          toast.error("Error", { description: data.error });
+          setLoading(false);
+          return;
+        }
+        else {
+          setProducts(data.products);
+          setLoading(false);
+        }
+      }).catch(() => {
+        // console.error("Error fetching products:", error);
+        toast.error("Error fetching products");
+        setLoading(false);
+      });
+  }
+
+  const loadWarehouses = () => {
+    setLoading(true)
+    listWarehouses(1, 10000).then((data) => {
+      if (data.error) {
+        toast.error("Error fetching warehouses", { description: data.error })
+        setLoading(false)
+      } else {
+        setWarehouses(data)
+        setLoading(false)
+      }
+    }).catch((error) => {
+      toast.error("Error fetching warehouses", { description: error.message })
+      setLoading(false)
+    });
+  }
+
+  useEffect(() => {
+    loadProducts();
+    loadWarehouses();
+  }, []);
 
   useEffect(() => {
     loadStockLogs(currentPage, limit);
@@ -151,8 +195,7 @@ export default function StockDashboard() {
         setStockLogs([data.stockTransaction, ...stockLogs]);
         resetForm();
         setOpen(false);
-        // loadProducts();
-        fetchProductData();
+        loadProducts();
         loadStockLogs(currentPage, limit);
       }
     }).catch((err) => {
