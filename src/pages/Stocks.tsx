@@ -13,9 +13,9 @@ import { useEffect, useState } from "react"
 import { isAuthenticated } from "@/api/auth"
 import { listStockLogs, updateStock } from "@/api/stocks"
 import { toast } from "sonner"
-import { listProducts } from "@/api/products"
-import { Product, Warehouse } from "./Products"
-import { listWarehouses } from "@/api/warehouse"
+import { useProductListStore } from "@/hooks/useProdcutListStore"
+import { fetchProductData } from "@/lib/fetchProductData"
+import { useWarehouseListStore } from "@/hooks/useWarehouseListStore"
 
 const outOfStockProducts = [
   { id: 101, name: "Notebook" },
@@ -41,8 +41,8 @@ enum TransactionType {
 export default function StockDashboard() {
   const [open, setOpen] = useState(false);
   const [stockLogs, setStockLogs] = useState<StockLog[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const products = useProductListStore();
+  const warehouses = useWarehouseListStore();
   const [limit, setLimit] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPage, setTotalPages] = useState(0);
@@ -54,21 +54,21 @@ export default function StockDashboard() {
     "sourceWarehouse": "",
     "destinationWarehouse": "",
     "quantity": "",
-    "transactionType":"",
+    "transactionType": "",
     "error": "",
     "success": false,
     "loadingForm": false,
   });
 
-  const {token} = isAuthenticated();
+  const { token } = isAuthenticated();
 
   const {
-    productId, 
-    isInterWarehouseTransaction, 
-    sourceWarehouse, 
-    destinationWarehouse, 
-    quantity, 
-    transactionType, 
+    productId,
+    isInterWarehouseTransaction,
+    sourceWarehouse,
+    destinationWarehouse,
+    quantity,
+    transactionType,
     error,
     success,
     loadingForm
@@ -97,48 +97,6 @@ export default function StockDashboard() {
     });
   }
 
-  const loadProducts = () => {
-    setLoading(true);
-    // Fetch products from API
-    listProducts(1, 1000)
-      .then((data) => {
-        if (data.error) {
-          toast.error("Error", { description: data.error });
-          setLoading(false);
-          return;
-        }
-        else {
-          setProducts(data.products);
-          setLoading(false);
-        }
-      }).catch((error) => {
-        // console.error("Error fetching products:", error);
-        toast.error("Error fetching products");
-        setLoading(false);
-      });
-  }
-
-  const loadWarehouses = () => {
-    setLoading(true)
-    listWarehouses(1, 10000).then((data) => {
-      if (data.error) {
-        toast.error("Error fetching warehouses", { description: data.error })
-        setLoading(false)
-      } else {
-        setWarehouses(data)
-        setLoading(false)
-      }
-    }).catch((error) => {
-      toast.error("Error fetching warehouses", { description: error.message })
-      setLoading(false)
-    });
-  }
-
-  useEffect(() => {
-    loadProducts();
-    loadWarehouses();
-  }, []);
-
   useEffect(() => {
     loadStockLogs(currentPage, limit);
   }, [currentPage]);
@@ -151,7 +109,7 @@ export default function StockDashboard() {
       "sourceWarehouse": "",
       "destinationWarehouse": "",
       "quantity": "",
-      "transactionType":"",
+      "transactionType": "",
       "error": "",
       "success": false,
       "loadingForm": false,
@@ -159,44 +117,45 @@ export default function StockDashboard() {
   }
 
   const handleUpdateStock = () => {
-    setFormData({...formData, loadingForm: true, error: "", success: false});
+    setFormData({ ...formData, loadingForm: true, error: "", success: false });
 
-    if(!productId || !isInterWarehouseTransaction || !destinationWarehouse || !quantity || !transactionType){
+    if (!productId || !isInterWarehouseTransaction || !destinationWarehouse || !quantity || !transactionType) {
       toast.error("All fields are required!")
       return;
     }
 
-    if(isInterWarehouseTransaction === "true" && !sourceWarehouse){
+    if (isInterWarehouseTransaction === "true" && !sourceWarehouse) {
       toast.error("Please select from warehouse");
       return;
     }
 
-    if(parseInt(quantity) <= 0){
+    if (parseInt(quantity) <= 0) {
       toast.error("Quantity must be greater than 0")
       return;
     }
 
     let stock = {
       productId,
-      "isInterWarehouseTransaction" : isInterWarehouseTransaction === "true" ? true : false,
+      "isInterWarehouseTransaction": isInterWarehouseTransaction === "true" ? true : false,
       transactionType,
       "sourceWarehouse": isInterWarehouseTransaction === "true" ? sourceWarehouse : null,
       destinationWarehouse,
       quantity,
       "date": Date.now(),
     } as unknown as StockLog;
-    
+
     updateStock(stock, token).then((data) => {
-      if(data.error){
-        setFormData({...formData, loadingForm: false, error: data.error, success: false});
-        toast.error("Error", {description: data.error})
+      if (data.error) {
+        setFormData({ ...formData, loadingForm: false, error: data.error, success: false });
+        toast.error("Error", { description: data.error })
       }
-      else{
+      else {
         console.log(data.stockTransaction);
         setStockLogs([data.stockTransaction, ...stockLogs]);
         resetForm();
         setOpen(false);
-        loadProducts();
+        // loadProducts();
+        fetchProductData();
         loadStockLogs(currentPage, limit);
       }
     }).catch((err) => {
@@ -228,7 +187,7 @@ export default function StockDashboard() {
             <div className="space-y-3">
               <div className="grid gap-2">
                 <label>Product</label>
-                <Select value={productId} onValueChange={(value) => setFormData({...formData, productId: value})}>
+                <Select value={productId} onValueChange={(value) => setFormData({ ...formData, productId: value })}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a product" />
                   </SelectTrigger>
@@ -243,7 +202,7 @@ export default function StockDashboard() {
               </div>
               <div className="grid gap-2">
                 <label>Action</label>
-                <Select value={transactionType} onValueChange={(value) => setFormData({...formData, transactionType: value})}>
+                <Select value={transactionType} onValueChange={(value) => setFormData({ ...formData, transactionType: value })}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Add / Remove" />
                   </SelectTrigger>
@@ -255,12 +214,12 @@ export default function StockDashboard() {
               </div>
               <div className="grid gap-2">
                 <label>Quantity</label>
-                <Input type="number" value={quantity} onChange={(e) => setFormData({...formData, quantity: e.target.value})} placeholder="Enter quantity" />
+                <Input type="number" value={quantity} onChange={(e) => setFormData({ ...formData, quantity: e.target.value })} placeholder="Enter quantity" />
               </div>
             </div>
             <div className="grid gap-2">
               <label>Is Inter-Warehouse Transaction</label>
-              <Select value={isInterWarehouseTransaction} onValueChange={(value) => setFormData({...formData, isInterWarehouseTransaction: value})}>
+              <Select value={isInterWarehouseTransaction} onValueChange={(value) => setFormData({ ...formData, isInterWarehouseTransaction: value })}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Yes / No" />
                 </SelectTrigger>
@@ -274,7 +233,7 @@ export default function StockDashboard() {
               <label>From Warehouse</label>
               <Select disabled={(isInterWarehouseTransaction) === "true" ? false : true}
                 value={sourceWarehouse}
-                onValueChange={(value) => setFormData({...formData, sourceWarehouse: value})}
+                onValueChange={(value) => setFormData({ ...formData, sourceWarehouse: value })}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a Warehouse" />
@@ -290,7 +249,7 @@ export default function StockDashboard() {
             </div>
             <div className="grid gap-2">
               <label>In Warehouse</label>
-              <Select value={destinationWarehouse} onValueChange={(value) => setFormData({...formData, destinationWarehouse: value})}>
+              <Select value={destinationWarehouse} onValueChange={(value) => setFormData({ ...formData, destinationWarehouse: value })}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a Warehouse" />
                 </SelectTrigger>

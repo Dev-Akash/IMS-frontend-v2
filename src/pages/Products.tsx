@@ -11,8 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
-import { listCategories } from "@/api/categories"
 import { listWarehouses } from "@/api/warehouse"
+import { useCategoryListStore } from "@/hooks/useCategoryListStore"
+import { useWarehouseListStore } from "@/hooks/useWarehouseListStore"
 
 export interface Warehouse {
     _id: string
@@ -38,16 +39,12 @@ export interface Product {
     updatedAt: string
 }
 
-interface Category {
-    _id: string;
-    name: string;
-}
-
 export default function Products() {
     const [openModal, setOpenModal] = useState<"add" | "edit" | null>(null);
     const [products, setProducts] = useState<Product[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+    const categories = useCategoryListStore();
+    // const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+    const warehouses = useWarehouseListStore();
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0); // Total number of pages
@@ -94,22 +91,6 @@ export default function Products() {
         });
     }
 
-    const loadCategories = () => {
-        setLoading(true)
-        listCategories(1, 10000).then((data) => {
-            if (data.error) {
-                toast.error("Error fetching categories", { description: data.error })
-                setLoading(false)
-            } else {
-                setCategories(data.categories)
-                setLoading(false)
-            }
-        }).catch((error) => {
-            toast.error("Error fetching categories", { description: error.message })
-            setLoading(false)
-        });
-    }
-
     const loadProducts = (currentPage: number, limit: number) => {
         setLoading(true);
         // Fetch products from API
@@ -133,27 +114,6 @@ export default function Products() {
                 setLoading(false);
             });
     }
-
-    const loadWarehouses = () => {
-        setLoading(true)
-        listWarehouses(1, 10000).then((data) => {
-            if (data.error) {
-                toast.error("Error fetching warehouses", { description: data.error })
-                setLoading(false)
-            } else {
-                setWarehouses(data)
-                setLoading(false)
-            }
-        }).catch((error) => {
-            toast.error("Error fetching warehouses", { description: error.message })
-            setLoading(false)
-        });
-    }
-
-    useEffect(() => {
-        loadCategories();
-        loadWarehouses();
-    }, [])
 
     useEffect(() => {
         loadProducts(currentPage, limit);
