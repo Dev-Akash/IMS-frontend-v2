@@ -17,7 +17,10 @@ import { listWarehouses } from "@/api/warehouse"
 export interface Warehouse {
     _id: string
     name: string
+    description: string
+    address: string
     manager: string
+    capacity: number
 }
 
 interface QuantityByWarehouse {
