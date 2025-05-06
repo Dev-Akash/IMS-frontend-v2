@@ -124,7 +124,7 @@ export default function StockDashboard() {
         toast.error("Error fetching warehouses", { description: data.error })
         setLoading(false)
       } else {
-        setWarehouses(data)
+        setWarehouses(data.warehouses)
         setLoading(false)
       }
     }).catch((error) => {

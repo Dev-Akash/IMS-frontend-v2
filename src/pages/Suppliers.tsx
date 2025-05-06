@@ -25,25 +25,6 @@ import { toast } from "sonner"
 import { createSupplier, deleteSupplier, listSuppliers, updateSupplier } from "@/api/supplier"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-// const suppliers = [
-//   {
-//     id: 1,
-//     name: "Tech Distributors Inc.",
-//     contact: "Alice Johnson",
-//     phone: "123-456-7890",
-//     email: "alice@techdist.com",
-//     location: "New York, NY",
-//   },
-//   {
-//     id: 2,
-//     name: "Global Parts Co.",
-//     contact: "Bob Smith",
-//     phone: "987-654-3210",
-//     email: "bob@globalparts.com",
-//     location: "Los Angeles, CA",
-//   },
-// ]
-
 export interface Supplier {
   _id?: string;
   supplier_name: string;

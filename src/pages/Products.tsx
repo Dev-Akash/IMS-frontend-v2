@@ -144,7 +144,7 @@ export default function Products() {
                 toast.error("Error fetching warehouses", { description: data.error })
                 setLoading(false)
             } else {
-                setWarehouses(data)
+                setWarehouses(data.warehouses)
                 setLoading(false)
             }
         }).catch((error) => {
