@@ -3,8 +3,9 @@ import { listNotifications } from "@/api/notifications";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
-import { TriangleAlert } from "lucide-react";
+import { Loader2, TriangleAlert } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export interface Notifications {
     _id: string
@@ -19,7 +20,6 @@ export default function Notifications() {
     const [search, setSearch] = useState("");
     const [notificationsList, setNotificationsList] = useState<Notifications[]>([]);
      const [loading, setLoading] = useState(false);
-     const [error, setError] = useState("");
      const {token} = isAuthenticated();
  
      useEffect(() => {
@@ -27,13 +27,12 @@ export default function Notifications() {
  
          listNotifications(1, 100, token).then((data) => {
              if(data.error){
-                 setError(data.error);
+                 toast.error(data.error);
                  setLoading(false)
              }
              else{
                  setNotificationsList(data);
                  setLoading(false);
-                 setError("");
              }
          }).catch((err) => {
              console.log(err);
@@ -66,7 +65,7 @@ export default function Notifications() {
                                 <TableCell>Status</TableCell>
                             </TableRow>
                         </TableHeader>
-                        <TableBody>
+                        {!loading && <TableBody>
                             {notificationsList
                                 .filter((notification) =>
                                     notification.message.toLowerCase().includes(search.toLowerCase())
@@ -88,7 +87,14 @@ export default function Notifications() {
                                         <TableCell colSpan={3} className="text-center">No notifications to show!</TableCell>
                                     </TableRow>
                                 }
-                        </TableBody>
+                        </TableBody>}
+                        {loading && <TableBody>
+                            <TableRow>
+                                <TableCell colSpan={3}>
+                                    <Loader2 className="animate-spin h-16 w-16 m-auto text-muted-foreground" />
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>}
                     </Table>
                 </CardContent>
             </Card>

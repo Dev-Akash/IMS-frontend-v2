@@ -54,7 +54,7 @@ export default function WarehousesPage() {
     loadingForm: false
   });
   const { user, token } = isAuthenticated();
-  const { warehouseId, name, description, address, manager, capacity, loadingForm } = formData;
+  const { name, description, address, manager, capacity, loadingForm } = formData;
 
   const resetForm = () => {
     setFormData({
